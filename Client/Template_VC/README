@@ -1,0 +1,210 @@
+
+                 TTPC, the template program for CHaser.
+                          Version 0.9, 2013/08/02
+
+
+                                             工業高等学校 教諭 磯垣  順
+
+本プログラムについて
+====================
+
+本プログラムは、Microsoft Visual C++ にて動作する CHaser のクライアント
+のテンプレートです。
+
+CHaser は全国情報技術教育研究会が主催するプログラミングコンテストで、
+比較的参加しやすいコンテストではあるのですが、全国情報技術教育研究会の
+ページは Java によるサンプルクライアントしか提供されておりません。
+
+多くの工業高等学校では Microsoft Visual C++ でC言語を習得しているであろ
+うことを考慮すると、Java によるプログラミング方法だけでなく C 言語で
+動作する CHaser のクライアントを提供することは一定の意義があると考えら
+れます。
+
+以上の理由により、C言語版の CHaser テンプレートプログラムを公開します。
+
+なお、以下の方針に従ってプログラムを作成・提供しています。
+
+1. 単にサンプルプログラムを参加させても順位を得ることは困難である
+   水準のものであること。
+2. 関数呼び出しなど、高校生が理解していない可能性がある機能を使わず
+   書かれていること。
+3. 多くの学校で導入されているであろう Microsoft Visual C++ にて動作
+   させることができること。
+
+プログラムのコンパイルと使い方
+==============================
+
+1. Visual Studio (Visual C++を導入しておきます。)
+2. Makefile と c201302.c を同一ディレクトリに配置します。
+3. 以下の手順で Visual Studio コマンドプロンプトを起動します。
+
+  [スタート]
+  -> [全てのプログラム]
+  -> [Microsoft Visual Studio 2010]
+  -> [Visual Studio コマンドプロンプト(2010)]
+
+4. 2 でファイルを配置したフォルダに移動します。
+
+  C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC>R:
+  R:\>cd CHaser
+  R:\CHaser>
+
+5. nmake コマンドを実行します。
+
+  R:\CHaser>nmake
+  Microsoft(R) Program Maintenance Utility Version 10.00.30319.01
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+
+  cl -Zi -Od -DDEBUG -c -DCRTAPI1=_cdecl -DCRTAPI2=_cdecl
+  -nologo -GS -D_X86_=1  -DWIN32 -D_WIN32 -W3 -D_WINNT
+  -D_WIN32_WINNT=0x0500 -DNTDDI_VERSION=0x05000000 -D_WIN
+  32_IE=0x0500 -DWINVER=0x0500  -D_MT -MTd c201302.c c201
+  302.c
+  link /DEBUG /DEBUGTYPE:cv  /INCREMENTAL:NO /NOLOGO -sub
+  system:console,5.0 -out:c201302.exe c201302.obj kernel3
+  2.lib  ws2_32.lib mswsock.lib advapi32.lib ws2_32.lib
+  R:\CHaser>
+
+なお、プログラムを修正した場合、同ディレクトリ内で単にnmake
+コマンドを実行してください。現在の実行可能ファイルが削除され、
+新しい実行可能ファイルが作成されます。
+
+6. 実行方法
+
+  以下のように無指定で実行すると、127.0.0.1:2010 に接続されます。接続先
+  は、DEFAULT_SERVER_ADDRとDEFAULT_SERVER_PORTにより変更できます。
+
+  R:\CHaser>c201302.exe
+
+  接続先を指定する場合には以下のように実行します。
+
+  R:\CHaser>c201302.exe 192.168.0.1 2009
+
+プログラム修正のこつ
+====================
+
+CHaser のプログラムでは1ターンの最初に周辺情報を得て、この
+周辺情報とこれまでの情報を基に、次の行動(サーチ・ルック・
+ウォーク・プットのいずれか)を実行し、その結果を得て、ターン
+を終了します。
+
+このターンは main() 関数の while(1) のステートメントの中に
+書かれています。具体的には以下の処理部分です。
+
+    while(1){
+        turn_start();
+        send_get_ready();
+        get_ret_value();    /* An array value[] will be updated. */
+            :
+            :
+
+この while(1) ループの中を改変することによりプログラムの修正
+を行います。
+
+1.  while(1) のループの中では、turn_start(), send_get_ready(),
+    get_ret_value() の 3 つの関数を必ず呼び出すようにしてくだ
+    さい。
+
+2.  get_ret_value() を呼び出すと、value[0]に制御情報(ゲーム
+    終了なら 0, ゲーム続行なら 1)が、value[1]～value[9]に周囲
+    9マスにあるオブジェクトの情報が格納されます。ここで、value[]
+    に返される値は以下により定義されています。
+
+        #define CONTROL_END '0'
+        #define CONTROL_PROGRESS '1'
+
+        #define OBJ_NONE '0'
+        #define OBJ_ENEMY '1'
+        #define OBJ_WALL '2'
+
+   制御情報が 0 (value[0]がCONTROL_END)の場合には、ゲーム終了
+   (勝敗確定)ですので、プログラムを終了して構いません。
+
+3. 2 で得られた value[] の値を基に、ウォーク・サーチ・ルック・
+   プットのいずれかの動作を行います。これらの動作を行うには、
+   以下のいずれかの関数を実行します。
+
+     walk_up();    look_up();    search_up();    put_up();
+     walk_down();  look_down();  search_down();  put_down();
+     walk_left();  look_left();  search_left();  put_left();
+     walk_right(); look_right(); search_right(); put_right();
+
+   なお、上記の関数を実行しない場合エラーとなります。
+
+4. 3 の関数を実行した後は、再度、get_ret_value() を実行します。
+   get_ret_value() を実行すると、関数実行の結果がvalue[0]～
+   value[9]に格納されます。value[0] は制御情報(終了・続行)が、
+   value[1]～value[9] には、関数に応じた結果が格納されます。
+   例えば、ウォーク系関数の場合には移動後の周辺9マスの値が、
+   サーチ系関数の場合には、指定した方向直線9マスの値が返され
+   るといった具合です。
+
+   制御情報が 0 (value[0]がCONTROL_END)の場合には、ゲーム終了
+   (勝敗確定)ですので、プログラムを終了して構いません。
+
+5. 以上でターンが終了しましたので、turn_done() を実行します。
+6. 以上の通り、1～5をゲーム終了まで繰り返します。
+
+よくある質問と回答
+==================
+
+[Q1] プログラムが動作しません。
+[A1] メール等で連絡ください。回答可能な範囲で回答します。
+
+[Q2-1] プログラムがスレッドセーフではありません。
+[Q2-2] プログラムがリエントラントではありません。
+[Q2-3] プログラムのモジュール性が低く手本になりません。
+[A2] 平均的な工業高等学校の生徒が理解できるよう、主要部分
+には、C言語の難しい機能を使わないようになっています。
+例えば、関数の戻り値でポインタを返せば、value[] を関数を通して
+渡すことが可能なことは理解していますが、メモリリーク・スタック
+フレームに置かれた変数のポインタを返す、など、様々な罠にはまる
+ことになります。これでは、職業プログラマになる前にプログラミ
+ングに挫折しかねません。これは本意ではありません。
+
+[Q3] プログラムの公開を中止してほしいのですが。
+[A3] 事情を添えて、連絡をください。考慮します。
+
+[Q4] このプログラムを自分のプログラムとして用いたりして構い
+ませんか?
+[A4] BSDライセンスにより公開されていますので、構いません。
+
+[Q5] 修正後のプログラムは公開の義務を負いますか?
+[A5] BSDライセンスにより公開されていますので、修正後の
+プログラムやそれらのソースコードの公開義務はありません。
+
+ライセンス
+==========
+
+本プログラムは、BSDライセンス(AS IS)にて提供されます。
+
+--
+                     TTPC, the template program for CHaser.
+
+
+              Copyright (c) 2013, Jun ISOGAKI, Ohta Technical Highschool.
+              All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the Ohta Technical Highschool nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL JUN ISOGAKI BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+--
+
