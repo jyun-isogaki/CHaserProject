@@ -143,7 +143,7 @@ int main(int argc, char *argv[]){
         if(value[0]==CONTROL_END){
             /* 制御情報が CONTROL_END('0') のときは試合終了。 */
             printf("end!\n");
-            return 0;
+            break;
         }
 
 /*
@@ -178,7 +178,7 @@ action_end:
         if(value[0]==CONTROL_END){
             /* 制御情報 value[0]が CONTROL_END('0') のときは試合終了。 */
             printf("end\n");
-            return 0;
+            break;
         }
         turn_done(); /* ターン終了 */
     }
