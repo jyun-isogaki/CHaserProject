@@ -193,6 +193,7 @@ void turn_start(){
     int n;
     action_done=0;
     do{
+	    Sleep(100);	
         n = recv(sockfd, buf, 1, 0);
         buf[n] = '\0';
     }while(buf[0]!='@');
