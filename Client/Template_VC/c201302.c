@@ -215,7 +215,7 @@ void get_ret_value(){
     int n;
     char    buf[BUFSIZE];
     Sleep(100);
-    memset(buf, '*', sizeof(buf));
+    memset(buf, 0x00, sizeof(buf));
     n = recv(sockfd, buf, sizeof(buf), 0);
     buf[n] = '\0';
     if(n==12){
@@ -223,6 +223,9 @@ void get_ret_value(){
     } else if (n==23) {
         strcpy(value,&buf[11]);
     } else {
+    	/* 12 byte でも 23 byte でもない場合、value[] が更新
+    	   されないままとなる。下手すると壁にぶつかる。実際
+    	   14バイトが返される例もでてきている。修正要か。    */
         printf("error n!=12 && n!=23\n");
     }
     printf("get_ret_value(): n=%d(\n%s\nvalue=%s)\n",n,buf,value);
